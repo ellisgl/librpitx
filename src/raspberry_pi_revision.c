@@ -25,12 +25,12 @@
 //
 //-------------------------------------------------------------------------
 
+#include "raspberry_pi_revision.h"
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "raspberry_pi_revision.h"
 
 //-------------------------------------------------------------------------
 //
@@ -148,8 +148,7 @@
 //
 //-------------------------------------------------------------------------
 
-static RASPBERRY_PI_MEMORY_T revisionToMemory[] =
-{
+static RASPBERRY_PI_MEMORY_T revisionToMemory[] = {
     RPI_MEMORY_UNKNOWN, //  0
     RPI_MEMORY_UNKNOWN, //  1
     RPI_256MB,          //  2
@@ -174,26 +173,15 @@ static RASPBERRY_PI_MEMORY_T revisionToMemory[] =
     RPI_256MB           // 15
 };
 
-static RASPBERRY_PI_MEMORY_T bitFieldToMemory[] =
-{
-    RPI_256MB,
-    RPI_512MB,
-    RPI_1024MB
-};
+static RASPBERRY_PI_MEMORY_T bitFieldToMemory[] = {RPI_256MB, RPI_512MB, RPI_1024MB};
 
 //-------------------------------------------------------------------------
 
-static RASPBERRY_PI_PROCESSOR_T bitFieldToProcessor[] =
-{
-    RPI_BROADCOM_2835,
-    RPI_BROADCOM_2836,
-    RPI_BROADCOM_2837
-};
+static RASPBERRY_PI_PROCESSOR_T bitFieldToProcessor[] = {RPI_BROADCOM_2835, RPI_BROADCOM_2836, RPI_BROADCOM_2837};
 
 //-------------------------------------------------------------------------
 
-static RASPBERRY_PI_I2C_DEVICE_T revisionToI2CDevice[] =
-{
+static RASPBERRY_PI_I2C_DEVICE_T revisionToI2CDevice[] = {
     RPI_I2C_DEVICE_UNKNOWN, //  0
     RPI_I2C_DEVICE_UNKNOWN, //  1
     RPI_I2C_0,              //  2
@@ -220,22 +208,11 @@ static RASPBERRY_PI_I2C_DEVICE_T revisionToI2CDevice[] =
 
 //-------------------------------------------------------------------------
 
-static RASPBERRY_PI_MODEL_T bitFieldToModel[] =
-{
-    RPI_MODEL_A,
-    RPI_MODEL_B,
-    RPI_MODEL_A_PLUS,
-    RPI_MODEL_B_PLUS,
-    RPI_MODEL_B_PI_2,
-    RPI_MODEL_ALPHA,
-    RPI_COMPUTE_MODULE,
-    RPI_MODEL_UNKNOWN,
-    RPI_MODEL_B_PI_3,
-    RPI_MODEL_ZERO
-};
+static RASPBERRY_PI_MODEL_T bitFieldToModel[] = {
+    RPI_MODEL_A,     RPI_MODEL_B,        RPI_MODEL_A_PLUS,  RPI_MODEL_B_PLUS, RPI_MODEL_B_PI_2,
+    RPI_MODEL_ALPHA, RPI_COMPUTE_MODULE, RPI_MODEL_UNKNOWN, RPI_MODEL_B_PI_3, RPI_MODEL_ZERO};
 
-static RASPBERRY_PI_MODEL_T revisionToModel[] =
-{
+static RASPBERRY_PI_MODEL_T revisionToModel[] = {
     RPI_MODEL_UNKNOWN,  //  0
     RPI_MODEL_UNKNOWN,  //  1
     RPI_MODEL_B,        //  2
@@ -262,17 +239,11 @@ static RASPBERRY_PI_MODEL_T revisionToModel[] =
 
 //-------------------------------------------------------------------------
 
-static RASPBERRY_PI_MANUFACTURER_T bitFieldToManufacturer[] =
-{
-    RPI_MANUFACTURER_SONY,
-    RPI_MANUFACTURER_EGOMAN,
-    RPI_MANUFACTURER_EMBEST,
-    RPI_MANUFACTURER_UNKNOWN,
-    RPI_MANUFACTURER_EMBEST
-};
+static RASPBERRY_PI_MANUFACTURER_T bitFieldToManufacturer[] = {RPI_MANUFACTURER_SONY, RPI_MANUFACTURER_EGOMAN,
+                                                               RPI_MANUFACTURER_EMBEST, RPI_MANUFACTURER_UNKNOWN,
+                                                               RPI_MANUFACTURER_EMBEST};
 
-static RASPBERRY_PI_MANUFACTURER_T revisionToManufacturer[] =
-{
+static RASPBERRY_PI_MANUFACTURER_T revisionToManufacturer[] = {
     RPI_MANUFACTURER_UNKNOWN, //  0
     RPI_MANUFACTURER_UNKNOWN, //  1
     RPI_MANUFACTURER_UNKNOWN, //  2
@@ -299,8 +270,7 @@ static RASPBERRY_PI_MANUFACTURER_T revisionToManufacturer[] =
 
 //-------------------------------------------------------------------------
 
-static int revisionToPcbRevision[] =
-{
+static int revisionToPcbRevision[] = {
     0, //  0
     0, //  1
     1, //  2
@@ -329,35 +299,27 @@ static int revisionToPcbRevision[] =
 //
 // Remove leading and trailing whitespace from a string.
 
-static char *
-trimWhiteSpace(
-    char *string)
-{
-    if (string == NULL)
-    {
+static char *trimWhiteSpace(char *string) {
+    if (string == NULL) {
         return NULL;
     }
 
-    while (isspace(*string))
-    {
+    while (isspace(*string)) {
         string++;
     }
 
-    if (*string == '\0')
-    {
+    if (*string == '\0') {
         return string;
     }
 
     char *end = string;
 
-    while (*end)
-    {
+    while (*end) {
         ++end;
     }
     --end;
 
-    while ((end > string) && isspace(*end))
-    {
+    while ((end > string) && isspace(*end)) {
         end--;
     }
 
@@ -367,30 +329,25 @@ trimWhiteSpace(
 
 //-------------------------------------------------------------------------
 
-int
-getRaspberryPiRevision()
-{
+int getRaspberryPiRevision() {
     int raspberryPiRevision = 0;
 
     FILE *fp = fopen("/proc/cpuinfo", "r");
 
-    if (fp == NULL)
-    {
+    if (fp == NULL) {
         perror("/proc/cpuinfo");
         return raspberryPiRevision;
     }
 
     char entry[80];
 
-    while (fgets(entry, sizeof(entry), fp) != NULL)
-    {
-        char* saveptr = NULL;
+    while (fgets(entry, sizeof(entry), fp) != NULL) {
+        char *saveptr = NULL;
 
         char *key = trimWhiteSpace(strtok_r(entry, ":", &saveptr));
         char *value = trimWhiteSpace(strtok_r(NULL, ":", &saveptr));
 
-        if (strcasecmp("Revision", key) == 0)
-        {
+        if (strcasecmp("Revision", key) == 0) {
             raspberryPiRevision = strtol(value, NULL, 16);
         }
     }
@@ -402,10 +359,7 @@ getRaspberryPiRevision()
 
 //-------------------------------------------------------------------------
 
-int
-getRaspberryPiInformation(
-    RASPBERRY_PI_INFO_T *info)
-{
+int getRaspberryPiInformation(RASPBERRY_PI_INFO_T *info) {
     int revision = getRaspberryPiRevision();
 
     return getRaspberryPiInformationForRevision(revision, info);
@@ -413,15 +367,10 @@ getRaspberryPiInformation(
 
 //-------------------------------------------------------------------------
 
-int
-getRaspberryPiInformationForRevision(
-    int revision,
-    RASPBERRY_PI_INFO_T *info)
-{
+int getRaspberryPiInformationForRevision(int revision, RASPBERRY_PI_INFO_T *info) {
     int result = 0;
 
-    if (info != NULL)
-    {
+    if (info != NULL) {
         info->memory = RPI_MEMORY_UNKNOWN;
         info->processor = RPI_PROCESSOR_UNKNOWN;
         info->i2cDevice = RPI_I2C_DEVICE_UNKNOWN;
@@ -432,48 +381,36 @@ getRaspberryPiInformationForRevision(
         info->revisionNumber = revision;
         info->peripheralBase = RPI_PERIPHERAL_BASE_UNKNOWN;
 
-        if (revision != 0)
-        {
-            size_t maxOriginalRevision = (sizeof(revisionToModel) /
-                                         sizeof(revisionToModel[0])) - 1;
+        if (revision != 0) {
+            size_t maxOriginalRevision = (sizeof(revisionToModel) / sizeof(revisionToModel[0])) - 1;
 
             // remove warranty bit
 
             revision &= ~0x3000000;
 
-            if (revision & 0x800000)
-            {
+            if (revision & 0x800000) {
                 // Raspberry Pi2 style revision encoding
 
                 result = 2;
 
-                if (info->revisionNumber & 0x2000000)
-                {
+                if (info->revisionNumber & 0x2000000) {
                     info->warrantyBit = 1;
                 }
 
                 int memoryIndex = (revision & 0x700000) >> 20;
-                size_t knownMemoryValues = sizeof(bitFieldToMemory)
-                                         / sizeof(bitFieldToMemory[0]);
+                size_t knownMemoryValues = sizeof(bitFieldToMemory) / sizeof(bitFieldToMemory[0]);
 
-                if (memoryIndex < knownMemoryValues)
-                {
+                if (memoryIndex < knownMemoryValues) {
                     info->memory = bitFieldToMemory[memoryIndex];
-                }
-                else
-                {
+                } else {
                     info->memory = RPI_MEMORY_UNKNOWN;
                 }
 
                 int processorIndex = (revision & 0xF000) >> 12;
-                size_t knownProcessorValues = sizeof(bitFieldToProcessor)
-                                            / sizeof(bitFieldToProcessor[0]);
-                if (processorIndex < knownProcessorValues)
-                {
+                size_t knownProcessorValues = sizeof(bitFieldToProcessor) / sizeof(bitFieldToProcessor[0]);
+                if (processorIndex < knownProcessorValues) {
                     info->processor = bitFieldToProcessor[processorIndex];
-                }
-                else
-                {
+                } else {
                     info->processor = RPI_PROCESSOR_UNKNOWN;
                 }
 
@@ -484,41 +421,30 @@ getRaspberryPiInformationForRevision(
                 info->i2cDevice = RPI_I2C_1;
 
                 int modelIndex = (revision & 0xFF0) >> 4;
-                size_t knownModelValues = sizeof(bitFieldToModel)
-                                        / sizeof(bitFieldToModel[0]);
+                size_t knownModelValues = sizeof(bitFieldToModel) / sizeof(bitFieldToModel[0]);
 
-                if (modelIndex < knownModelValues)
-                {
+                if (modelIndex < knownModelValues) {
                     info->model = bitFieldToModel[modelIndex];
-                }
-                else
-                {
+                } else {
                     info->model = RPI_MODEL_UNKNOWN;
                 }
 
                 int madeByIndex = (revision & 0xF0000) >> 16;
-                size_t knownManufacturerValues = sizeof(bitFieldToManufacturer)
-                                               / sizeof(bitFieldToManufacturer[0]);
+                size_t knownManufacturerValues = sizeof(bitFieldToManufacturer) / sizeof(bitFieldToManufacturer[0]);
 
-                if (madeByIndex < knownManufacturerValues)
-                {
+                if (madeByIndex < knownManufacturerValues) {
                     info->manufacturer = bitFieldToManufacturer[madeByIndex];
-                }
-                else
-                {
+                } else {
                     info->manufacturer = RPI_MANUFACTURER_UNKNOWN;
                 }
 
                 info->pcbRevision = revision & 0xF;
-            }
-            else if (revision <= maxOriginalRevision)
-            {
+            } else if (revision <= maxOriginalRevision) {
                 // Original revision encoding
 
                 result = 1;
 
-                if (info->revisionNumber & 0x1000000)
-                {
+                if (info->revisionNumber & 0x1000000) {
                     info->warrantyBit = 1;
                 }
 
@@ -528,38 +454,34 @@ getRaspberryPiInformationForRevision(
                 info->manufacturer = revisionToManufacturer[revision];
                 info->pcbRevision = revisionToPcbRevision[revision];
 
-                if (info->model == RPI_MODEL_UNKNOWN)
-                {
+                if (info->model == RPI_MODEL_UNKNOWN) {
                     info->processor = RPI_PROCESSOR_UNKNOWN;
-                }
-                else
-                {
+                } else {
                     info->processor = RPI_BROADCOM_2835;
                 }
             }
         }
 
-        switch (info->processor)
-        {
-        case RPI_PROCESSOR_UNKNOWN:
+        switch (info->processor) {
+            case RPI_PROCESSOR_UNKNOWN:
 
-            info->peripheralBase = RPI_PERIPHERAL_BASE_UNKNOWN;
-            break;
+                info->peripheralBase = RPI_PERIPHERAL_BASE_UNKNOWN;
+                break;
 
-        case RPI_BROADCOM_2835:
+            case RPI_BROADCOM_2835:
 
-            info->peripheralBase = RPI_BROADCOM_2835_PERIPHERAL_BASE;
-            break;
+                info->peripheralBase = RPI_BROADCOM_2835_PERIPHERAL_BASE;
+                break;
 
-        case RPI_BROADCOM_2836:
+            case RPI_BROADCOM_2836:
 
-            info->peripheralBase = RPI_BROADCOM_2836_PERIPHERAL_BASE;
-            break;
+                info->peripheralBase = RPI_BROADCOM_2836_PERIPHERAL_BASE;
+                break;
 
-        case RPI_BROADCOM_2837:
+            case RPI_BROADCOM_2837:
 
-            info->peripheralBase = RPI_BROADCOM_2837_PERIPHERAL_BASE;
-            break;
+                info->peripheralBase = RPI_BROADCOM_2837_PERIPHERAL_BASE;
+                break;
         }
     }
 
@@ -568,32 +490,28 @@ getRaspberryPiInformationForRevision(
 
 //-------------------------------------------------------------------------
 
-const char *
-raspberryPiMemoryToString(
-    RASPBERRY_PI_MEMORY_T memory)
-{
+const char *raspberryPiMemoryToString(RASPBERRY_PI_MEMORY_T memory) {
     const char *string = "unknown";
 
-    switch(memory)
-    {
-    case RPI_256MB:
+    switch (memory) {
+        case RPI_256MB:
 
-        string = "256 MB";
-        break;
+            string = "256 MB";
+            break;
 
-    case RPI_512MB:
+        case RPI_512MB:
 
-        string = "512 MB";
-        break;
+            string = "512 MB";
+            break;
 
-    case RPI_1024MB:
+        case RPI_1024MB:
 
-        string = "1024 MB";
-        break;
+            string = "1024 MB";
+            break;
 
-    default:
+        default:
 
-        break;
+            break;
     }
 
     return string;
@@ -601,32 +519,28 @@ raspberryPiMemoryToString(
 
 //-------------------------------------------------------------------------
 
-const char *
-raspberryPiProcessorToString(
-    RASPBERRY_PI_PROCESSOR_T processor)
-{
+const char *raspberryPiProcessorToString(RASPBERRY_PI_PROCESSOR_T processor) {
     const char *string = "unknown";
 
-    switch(processor)
-    {
-    case RPI_BROADCOM_2835:
+    switch (processor) {
+        case RPI_BROADCOM_2835:
 
-        string = "Broadcom BCM2835";
-        break;
+            string = "Broadcom BCM2835";
+            break;
 
-    case RPI_BROADCOM_2836:
+        case RPI_BROADCOM_2836:
 
-        string = "Broadcom BCM2836";
-        break;
+            string = "Broadcom BCM2836";
+            break;
 
-    case RPI_BROADCOM_2837:
+        case RPI_BROADCOM_2837:
 
-        string = "Broadcom BCM2837";
-        break;
+            string = "Broadcom BCM2837";
+            break;
 
-    default:
+        default:
 
-        break;
+            break;
     }
 
     return string;
@@ -634,27 +548,23 @@ raspberryPiProcessorToString(
 
 //-------------------------------------------------------------------------
 
-const char *
-raspberryPiI2CDeviceToString(
-    RASPBERRY_PI_I2C_DEVICE_T i2cDevice)
-{
+const char *raspberryPiI2CDeviceToString(RASPBERRY_PI_I2C_DEVICE_T i2cDevice) {
     const char *string = "unknown";
 
-    switch(i2cDevice)
-    {
-    case RPI_I2C_0:
+    switch (i2cDevice) {
+        case RPI_I2C_0:
 
-        string = "/dev/i2c-0";
-        break;
+            string = "/dev/i2c-0";
+            break;
 
-    case RPI_I2C_1:
+        case RPI_I2C_1:
 
-        string = "/dev/i2c-1";
-        break;
+            string = "/dev/i2c-1";
+            break;
 
-    default:
+        default:
 
-        break;
+            break;
     }
 
     return string;
@@ -662,62 +572,58 @@ raspberryPiI2CDeviceToString(
 
 //-------------------------------------------------------------------------
 
-const char *
-raspberryPiModelToString(
-    RASPBERRY_PI_MODEL_T model)
-{
+const char *raspberryPiModelToString(RASPBERRY_PI_MODEL_T model) {
     const char *string = "unknown";
 
-    switch(model)
-    {
-    case RPI_MODEL_A:
+    switch (model) {
+        case RPI_MODEL_A:
 
-        string = "Model A";
-        break;
+            string = "Model A";
+            break;
 
-    case RPI_MODEL_B:
+        case RPI_MODEL_B:
 
-        string = "Model B";
-        break;
+            string = "Model B";
+            break;
 
-    case RPI_MODEL_A_PLUS:
+        case RPI_MODEL_A_PLUS:
 
-        string = "Model A+";
-        break;
+            string = "Model A+";
+            break;
 
-    case RPI_MODEL_B_PLUS:
+        case RPI_MODEL_B_PLUS:
 
-        string = "Model B+";
-        break;
+            string = "Model B+";
+            break;
 
-    case RPI_MODEL_B_PI_2:
+        case RPI_MODEL_B_PI_2:
 
-        string = "Model B Pi 2";
-        break;
+            string = "Model B Pi 2";
+            break;
 
-    case RPI_MODEL_ALPHA:
+        case RPI_MODEL_ALPHA:
 
-        string = "Alpha";
-        break;
+            string = "Alpha";
+            break;
 
-    case RPI_COMPUTE_MODULE:
+        case RPI_COMPUTE_MODULE:
 
-        string = "Compute Module";
-        break;
+            string = "Compute Module";
+            break;
 
-    case RPI_MODEL_ZERO:
+        case RPI_MODEL_ZERO:
 
-        string = "Model Zero";
-        break;
+            string = "Model Zero";
+            break;
 
-    case RPI_MODEL_B_PI_3:
+        case RPI_MODEL_B_PI_3:
 
-        string = "Model B Pi 3";
-        break;
+            string = "Model B Pi 3";
+            break;
 
-    default:
+        default:
 
-        break;
+            break;
     }
 
     return string;
@@ -725,39 +631,34 @@ raspberryPiModelToString(
 
 //-------------------------------------------------------------------------
 
-const char *
-raspberryPiManufacturerToString(
-    RASPBERRY_PI_MANUFACTURER_T manufacturer)
-{
+const char *raspberryPiManufacturerToString(RASPBERRY_PI_MANUFACTURER_T manufacturer) {
     const char *string = "unknown";
 
-    switch(manufacturer)
-    {
-    case RPI_MANUFACTURER_SONY:
+    switch (manufacturer) {
+        case RPI_MANUFACTURER_SONY:
 
-        string = "Sony";
-        break;
+            string = "Sony";
+            break;
 
-    case RPI_MANUFACTURER_EGOMAN:
+        case RPI_MANUFACTURER_EGOMAN:
 
-        string = "Egoman";
-        break;
+            string = "Egoman";
+            break;
 
-    case RPI_MANUFACTURER_QISDA:
+        case RPI_MANUFACTURER_QISDA:
 
-        string = "Qisda";
-        break;
+            string = "Qisda";
+            break;
 
-    case RPI_MANUFACTURER_EMBEST:
+        case RPI_MANUFACTURER_EMBEST:
 
-        string = "Embest";
-        break;
+            string = "Embest";
+            break;
 
-    default:
+        default:
 
-        break;
+            break;
     }
 
     return string;
 }
-

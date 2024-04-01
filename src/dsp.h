@@ -8,24 +8,24 @@
 
 class dsp
 {
-	protected:
-	double prev_phase = 0;
-	
-	double constrainAngle(double x);
-	double angleConv(double angle);
-	double angleDiff(double a,double b);
-	double unwrap(double previousAngle,double newAngle);
-	int arctan2(int y, int x);
+    protected:
+    double prev_phase = 0;
 
-	public:
-	uint32_t samplerate;
-	//double phase;
-	double amplitude;
-	double frequency;
+    double constrainAngle(double x);
+    double angleConv(double angle);
+    double angleDiff(double a,double b);
+    double unwrap(double previousAngle,double newAngle);
+    int arctan2(int y, int x);
 
-	dsp();
-	dsp(uint32_t samplerate);
-	void pushsample(std::complex<float> sample);	
+    public:
+    uint32_t samplerate;
+    //double phase;
+    double amplitude;
+    double frequency;
+
+    dsp();
+    dsp(uint32_t samplerate);
+    void pushsample(std::complex<float> sample);
 
 };
 #endif
