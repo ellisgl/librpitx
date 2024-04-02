@@ -108,20 +108,15 @@ clkgpio::~clkgpio() {
 
 int clkgpio::SetPllNumber(int PllNo, int MashType) {
     print_clock_tree();
-    if (PllNo < 8)
-        pllnumber = PllNo;
-    else
-        pllnumber = clk_pllc;
-
-    if (MashType < 4)
-        Mash = MashType;
-    else
-        Mash = 0;
+    pllnumber = PllNo < 8 ? PllNo : clk_pllc;
+    Mash = MashType < 4 ? MashType : 0;
+    
     gpioreg[GPCLK_CNTL] = 0x5A000000 | (Mash << 9) | pllnumber /*|(1 << 5)*/; //5 is Reset CLK
     usleep(100);
     //gpioreg[GPCLK_CNTL_2] = 0x5A000000 | (Mash << 9) | pllnumber /*|(1 << 5)*/; //5 is Reset CLK
     //usleep(100);
     Pllfrequency = GetPllFrequency(pllnumber);
+
     return 0;
 }
 

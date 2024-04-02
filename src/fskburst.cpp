@@ -1,20 +1,19 @@
-/*
-Copyright (C) 2018  Evariste COURJAUD F5OEO
-
-This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
+/**
+ * Copyright (C) 2018  Evariste COURJAUD F5OEO
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "fskburst.h"
 
 #include <unistd.h>
@@ -22,16 +21,24 @@ This program is free software: you can redistribute it and/or modify
 #include "stdio.h"
 #include "util.h"
 
-fskburst::fskburst(uint64_t TuneFrequency, float SymbolRate, float Deviation, int Channel, uint32_t FifoSize,
-                   size_t upsample, float RatioRamp)
-    : bufferdma(Channel, FifoSize * upsample + 3, 2, 1), freqdeviation(Deviation), SR_upsample(upsample) {
+fskburst::fskburst(
+    uint64_t TuneFrequency,
+    float SymbolRate,
+    float Deviation,
+    int Channel,
+    uint32_t FifoSize,
+    size_t upsample, float RatioRamp
+): bufferdma(Channel, FifoSize * upsample + 3, 2, 1), freqdeviation(Deviation), SR_upsample(upsample){
     clkgpio::SetAdvancedPllMode(true);
-    clkgpio::SetCenterFrequency(TuneFrequency,
-                                Deviation * 10); // Write Mult Int and Frac : FixMe carrier is already there
+    // @todo: Carrier is already there
+    // Write Mult Int and Frac.
+    clkgpio::SetCenterFrequency(TuneFrequency, Deviation * 10);
     clkgpio::SetFrequency(0);
     disableclk(4);
     syncwithpwm = false;
-    Ramp = SR_upsample * RatioRamp; //Ramp time = 10%
+
+    //Ramp time = 10%
+    Ramp = SR_upsample * RatioRamp; 
 
     if (syncwithpwm) {
         pwmgpio::SetPllNumber(clk_plld, 1);
@@ -65,8 +72,9 @@ void fskburst::SetDmaAlgo() {
         SetEasyCB(cbp++, 0, dma_pcm, 64 + 1);
     }
 
-    SetEasyCB(cbp++, buffersize * registerbysample - 2, dma_fsel, 1); //Enable clk
-
+    //Enable clk
+    SetEasyCB(cbp++, buffersize * registerbysample - 2, dma_fsel, 1); 
+    
     for (uint32_t samplecnt = 0; samplecnt < buffersize - 2; samplecnt++) {
         // Write a frequency sample
         SetEasyCB(cbp++, samplecnt * registerbysample, dma_pllc_frac, 1); //FReq
@@ -82,6 +90,7 @@ void fskburst::SetDmaAlgo() {
 
     dbg_printf(2, "Last cbp :  src %x dest %x next %x\n", cbp->src, cbp->dst, cbp->next);
 }
+
 void fskburst::SetSymbols(unsigned char *Symbols, uint32_t Size) {
     if (Size > buffersize - 3) {
         dbg_printf(1, "Buffer overflow\n");
@@ -98,12 +107,14 @@ void fskburst::SetSymbols(unsigned char *Symbols, uint32_t Size) {
             cbp->next = mem_virt_to_phys(cbp + 1);
             cbp++;
         }
+
         for (size_t j = 0; j < Ramp; j++) {
             if (i < Size - 1) {
                 sampletab[i * SR_upsample + j + SR_upsample - Ramp] =
                     (0x5A << 24) |
-                    GetMasterFrac(freqdeviation * Symbols[i] +
-                                  j * (freqdeviation * Symbols[i + 1] - freqdeviation * Symbols[i]) / (float) Ramp);
+                    GetMasterFrac(
+                        freqdeviation * Symbols[i] + j * (freqdeviation * Symbols[i + 1] - freqdeviation * Symbols[i]) / (float) Ramp
+                    );
                 dbg_printf(2, "Ramp %f ->%f : %d %f\n", freqdeviation * Symbols[i], freqdeviation * Symbols[i + 1], j,
                            freqdeviation * Symbols[i] +
                                j * (freqdeviation * Symbols[i + 1] - freqdeviation * Symbols[i]) / (float) Ramp);
@@ -117,15 +128,18 @@ void fskburst::SetSymbols(unsigned char *Symbols, uint32_t Size) {
             cbp++;
         }
     }
+
     cbp--;
     cbp->next = mem_virt_to_phys(lastcbp);
 
     dma::start();
-    while (isrunning()) //Block function : return until sent completely signal
-    {
+    
+    //Block function: return until sent completely signal
+    while (isrunning()) {
         //dbg_printf(1,"GPIO %x\n",clkgpio::gengpio.gpioreg[GPFSEL0]);
         usleep(100);
     }
+
     dbg_printf(1, "FSK burst end Tx\n", cbp->src, cbp->dst, cbp->next);
-    usleep(100); //To be sure last symbol Tx ?
+    usleep(100); // To be sure last symbol Tx?
 }
